@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朱雅晶-产品岗-原型作品</title>
+<style>
+  /* ===== 全局低保真风格 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 20px;
+  }
+
+  /* ===== 手机画布 375×812 ===== */
+  .phone {
+    width: 375px; height: 812px;
+    background: #fff;
+    border: 2px solid #333;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== 页面容器 ===== */
+  .page { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #fff; }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ===== 通用组件 ===== */
+  .nav-bar {
+    height: 44px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #ccc; flex-shrink: 0;
+  }
+  .nav-title { font-size: 16px; font-weight: bold; color: #1a1a1a; }
+  .nav-left { font-size: 14px; color: #333; cursor: pointer; }
+  .nav-right { display: flex; gap: 12px; }
+  .nav-btn {
+    width: 32px; height: 32px; border: 1px solid #999; background: #f5f5f5;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    color: #333; cursor: pointer;
+  }
+
+  .tab-bar {
+    display: flex; gap: 24px; padding: 10px 16px; border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+  }
+  .tab { font-size: 14px; color: #666; cursor: pointer; padding: 2px 8px; }
+  .tab.active { color: #1a1a1a; font-weight: bold; background: #ddd; }
+
+  .bottom-bar {
+    height: 50px; display: flex; align-items: center; justify-content: space-around;
+    border-top: 1px solid #ccc; flex-shrink: 0; background: #fafafa;
+  }
+  .bottom-item {
+    font-size: 12px; color: #666; cursor: pointer; text-align: center;
+  }
+  .bottom-item.active { color: #1a1a1a; font-weight: bold; }
+
+  /* 滚动内容区 */
+  .scroll-area { flex: 1; overflow-y: auto; }
+
+  /* ===== 第1页：设计说明页 ===== */
+  .design-note {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 40px 24px; height: 100%;
+  }
+  .design-note h2 {
+    font-size: 18px; font-weight: bold; color: #1a1a1a;
+    text-align: center; margin-bottom: 24px;
+  }
+  .design-note .section { margin-bottom: 20px; }
+  .design-note .section-label {
+    font-size: 13px; font-weight: bold; color: #333; margin-bottom: 4px;
+  }
+  .design-note .section-text {
+    font-size: 12px; color: #555; line-height: 1.8;
+  }
+  .design-note .divider {
+    border: none; border-top: 1px dashed #999; margin: 20px 0;
+  }
+
+  /* ===== 第2页：首页 ===== */
+  .room-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    padding: 12px 16px;
+  }
+  .room-card {
+    border: 1px solid #ddd; padding: 8px; cursor: pointer; background: #fff;
+  }
+  .room-card:hover { border-color: #666; }
+  .room-cover {
+    width: 100%; height: 100px; background: #e0e0e0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #999; margin-bottom: 6px;
+  }
+  .room-title-short {
+    height: 4px; background: #ccc; margin-bottom: 4px; width: 70%;
+  }
+  .room-title-long {
+    height: 4px; background: #ccc; margin-bottom: 8px; width: 90%;
+  }
+  .room-meta {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888;
+  }
+  .avatar-sm {
+    width: 20px; height: 20px; border-radius: 50%; background: #ccc;
+    border: 1px solid #aaa;
+  }
+
+  /* ===== 第3页：语音房内页 ===== */
+  .room-header {
+    height: 44px; display: flex; align-items: center;
+    padding: 0 12px; border-bottom: 1px solid #ccc; flex-shrink: 0;
+  }
+  .back-btn { font-size: 18px; cursor: pointer; color: #333; margin-right: 8px; }
+  .room-title { font-size: 15px; font-weight: bold; color: #1a1a1a; flex: 1; }
+
+  /* 麦位区 */
+  .seat-area {
+    padding: 16px 12px 8px; flex-shrink: 0;
+    border-bottom: 1px solid #eee; position: relative;
+  }
+  .seat-grid {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  }
+  .seat {
+    width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .seat-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 2px solid #bbb; background: #e8e8e8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #999; position: relative;
+  }
+  .seat-avatar.occupied { background: #ccc; border-color: #888; }
+  .seat-avatar.host { border-color: #333; border-width: 3px; }
+  .seat-avatar.you { background: #d0d0d0; border-color: #555; }
+  .seat-name { font-size: 10px; color: #666; text-align: center; }
+  .seat-tag {
+    font-size: 8px; background: #eee; border: 1px solid #bbb;
+    padding: 1px 4px; color: #555; position: absolute; bottom: -4px;
+  }
+
+  /* 麦位状态图标 */
+  .mute-badge {
+    position: absolute; bottom: -6px; right: -4px;
+    width: 18px; height: 18px; font-size: 10px; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .mute-self { color: #888; }
+  .mute-force { color: #c00; font-weight: bold; }
+
+  /* 闭麦区分标注 */
+  .mute-legend {
+    font-size: 9px; color: #999; text-align: center; margin-top: 8px;
+    border: 1px dashed #ddd; padding: 4px 8px;
+  }
+
+  /* 公屏聊天区 */
+  .chat-area {
+    flex: 1; overflow-y: auto; padding: 10px 12px;
+    border-top: 1px solid #eee; background: #fafafa;
+  }
+  .chat-msg {
+    font-size: 11px; color: #444; margin-bottom: 6px; line-height: 1.6;
+  }
+  .chat-name { color: #666; }
+  .chat-tag {
+    font-size: 9px; border: 1px solid #999; padding: 0 3px; color: #555;
+    margin-right: 2px;
+  }
+
+  /* 底部操作栏 */
+  .action-bar {
+    height: 50px; display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; border-top: 1px solid #ccc; flex-shrink: 0; background: #fafafa;
+  }
+  .msg-input {
+    flex: 1; height: 34px; border: 1px solid #ccc; padding: 0 10px;
+    font-size: 13px; color: #333; background: #fff;
+  }
+  .msg-input::placeholder { color: #aaa; }
+  .btn-gift {
+    height: 34px; padding: 0 14px; border: 1px solid #999;
+    background: #f5f5f5; font-size: 13px; color: #333; cursor: pointer;
+  }
+  .btn-mic {
+    height: 34px; padding: 0 16px; border: 1px solid #333;
+    background: #1a1a1a; color: #fff; font-size: 13px; font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-mic.is-disabled {
+    opacity: 0.5; cursor: not-allowed;
+  }
+
+  /* ===== 第4页：弹窗 ===== */
+  .overlay {
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45); z-index: 10;
+    justify-content: center; align-items: center;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    width: 290px; background: #fff; border: 2px solid #333; padding: 20px;
+  }
+  .modal-title { font-size: 16px; font-weight: bold; color: #1a1a1a; margin-bottom: 16px; }
+  .modal-input {
+    width: 100%; height: 36px; border: 1px solid #ccc; padding: 0 10px;
+    font-size: 13px; margin-bottom: 12px; color: #333;
+  }
+  .modal-input::placeholder { color: #aaa; }
+  .modal-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; font-size: 13px; color: #333;
+  }
+  .modal-select {
+    width: 140px; height: 32px; border: 1px solid #ccc; padding: 0 8px;
+    font-size: 12px; color: #333; background: #fff;
+  }
+  .modal-btns {
+    display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;
+  }
+  .btn-cancel {
+    height: 34px; padding: 0 20px; border: 1px solid #999;
+    background: #f5f5f5; font-size: 13px; color: #333; cursor: pointer;
+  }
+  .btn-create {
+    height: 34px; padding: 0 20px; border: 1px solid #333;
+    background: #1a1a1a; color: #fff; font-size: 13px; cursor: pointer;
+  }
+  .btn-create:disabled { opacity: 0.4; cursor: not-allowed; background: #888; border-color: #888; }
+
+  /* Tooltip */
+  .tooltip {
+    display: none; position: absolute; bottom: 110%; left: 50%;
+    transform: translateX(-50%); background: #333; color: #fff;
+    font-size: 11px; padding: 4px 10px; white-space: nowrap;
+    pointer-events: none; z-index: 5;
+  }
+  .tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent; border-top-color: #333;
+  }
+  #btnMicWrap:hover .tooltip.show { display: block; }
+
+  /* 辅助文本 */
+  .page-indicator {
+    position: absolute; bottom: 6px; right: 10px;
+    font-size: 9px; color: #bbb; z-index: 5;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- ==================== 第1页：设计说明页 ==================== -->
+  <div class="page active" id="page1">
+    <div class="design-note">
+      <h2>语聊APP语音房核心流程<br>原型练习</h2>
+
+      <div class="section">
+        <div class="section-label">1. 设计背景</div>
+        <div class="section-text">围绕语聊社交最核心的语音房互动场景，还原用户找房、进房、上麦互动的完整主路径。</div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">2. 设计目标</div>
+        <div class="section-text">优化移动端单手操作效率，降低用户上麦互动门槛，保证房间内信息层级清晰。</div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">3. 页面范围</div>
+        <div class="section-text">首页推荐 → 语音房内页 → 创建房间弹窗</div>
+      </div>
+
+      <div class="section" style="border: 1px dashed #999; padding: 8px; background: #fafafa;">
+        <div class="section-label">4. 取舍说明 ★</div>
+        <div class="section-text">
+          优先保证核心流程顺畅，<b>礼物系统、个人主页、排行榜</b>等非核心模块暂未展开设计。<br>
+          <span style="color:#888;">→ 体现产品优先级思维，不是堆功能</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div style="text-align:center; font-size:12px; color:#888;">
+        点击下方按钮进入首页 →
+      </div>
+      <div style="text-align:center; margin-top:12px;">
+        <span onclick="goPage('page2')" style="
+          display:inline-block; padding:10px 36px; border:2px solid #333;
+          font-size:14px; font-weight:bold; color:#1a1a1a; cursor:pointer;
+        ">进入原型</span>
+      </div>
+    </div>
+    <div class="page-indicator">1/4 · 设计说明</div>
+  </div>
+
+  <!-- ==================== 第2页：首页-语聊房推荐页 ==================== -->
+  <div class="page" id="page2">
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar">
+      <span class="nav-title">首页</span>
+      <div class="nav-right">
+        <div class="nav-btn" title="搜索">🔍</div>
+        <div class="nav-btn" onclick="openCreateModal()" title="创建房间">＋</div>
+      </div>
+    </div>
+
+    <!-- 分类标签栏 -->
+    <div class="tab-bar">
+      <span class="tab active">推荐</span>
+      <span class="tab">情感</span>
+      <span class="tab">K歌</span>
+      <span class="tab">游戏</span>
+      <span class="tab">交友</span>
+    </div>
+
+    <!-- 房间列表 -->
+    <div class="scroll-area">
+      <div class="room-grid" id="roomGrid">
+        <!-- JS 动态生成 -->
+      </div>
+    </div>
+
+    <!-- 底部Tab栏 -->
+    <div class="bottom-bar">
+      <span class="bottom-item active">🏠 首页</span>
+      <span class="bottom-item">🎤 房间</span>
+      <span class="bottom-item">💬 消息</span>
+      <span class="bottom-item">👤 我的</span>
+    </div>
+
+    <div class="page-indicator">2/4 · 首页推荐</div>
+  </div>
+
+  <!-- ==================== 第3页：语音房内页 ==================== -->
+  <div class="page" id="page3">
+    <!-- 顶部栏 -->
+    <div class="room-header">
+      <span class="back-btn" onclick="goPage('page2')">&lt;</span>
+      <span class="room-title" id="roomTitleDisplay">🎵 深夜情感电台</span>
+      <div class="nav-btn">⋯</div>
+    </div>
+
+    <!-- 麦位区 -->
+    <div class="seat-area">
+      <div class="seat-grid" id="seatGrid">
+        <!-- JS 动态生成 -->
+      </div>
+      <!-- 真人细节：闭麦状态区分标注 -->
+      <div class="mute-legend">
+        💡 <b>产品细节：</b>🔇 用户主动闭麦 ｜ 🚫<span style="color:#c00;">红色</span> 房主强制闭麦 — 区分两种状态，减少公屏误会
+      </div>
+    </div>
+
+    <!-- 公屏聊天区 -->
+    <div class="chat-area">
+      <div class="chat-msg"><span class="chat-tag">房主</span><span class="chat-name">小夜：</span>欢迎新来的朋友们～👋</div>
+      <div class="chat-msg"><span class="chat-name">用户A：</span>今晚聊什么话题</div>
+      <div class="chat-msg"><span class="chat-name">用户B：</span>主播唱歌吗</div>
+      <div class="chat-msg"><span class="chat-name">用户C：</span>第一次来，大家好</div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="action-bar">
+      <input class="msg-input" type="text" placeholder="说点什么...">
+      <button class="btn-gift">🎁</button>
+      <span id="btnMicWrap" style="position:relative;display:inline-block;">
+        <button class="btn-mic" id="btnMic" onclick="toggleMic()">上麦</button>
+        <span class="tooltip" id="micTooltip">麦位已满，请稍后再试</span>
+      </span>
+    </div>
+
+    <div class="page-indicator">3/4 · 语音房内页</div>
+  </div>
+
+  <!-- ==================== 弹窗：创建房间 ==================== -->
+  <div class="overlay" id="createOverlay">
+    <div class="modal">
+      <div class="modal-title">创建房间</div>
+
+      <input class="modal-input" id="roomNameInput" type="text"
+             placeholder="请输入房间标题" oninput="checkCreateValid()">
+
+      <div class="modal-row">
+        <span>房间分类</span>
+        <select class="modal-select">
+          <option>情感</option><option>K歌</option><option>游戏</option><option>交友</option>
+        </select>
+      </div>
+
+      <div class="modal-row">
+        <span>麦位数</span>
+        <select class="modal-select">
+          <option>8个麦位</option><option>6个麦位</option><option>4个麦位</option>
+        </select>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeCreateModal()">取消</button>
+        <button class="btn-create" id="btnCreate" disabled onclick="createRoom()">创建</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== 数据状态 =====
+let currentPage = 'page1';
+let isOnMic = false;
+let mySeatIndex = -1;
+
+// 麦位数据：0=房主，1-7=普通麦位
+const seats = [
+  { id: 0, name: '小夜', role: 'host', occupied: true },
+  { id: 1, name: '小明', role: 'guest', occupied: true, muteSelf: true },
+  { id: 2, name: '空位', role: 'guest', occupied: false },
+  { id: 3, name: '阿强', role: 'guest', occupied: true, muteForce: true },
+  { id: 4, name: '空位', role: 'guest', occupied: false },
+  { id: 5, name: '乐乐', role: 'guest', occupied: true },
+  { id: 6, name: '空位', role: 'guest', occupied: false },
+  { id: 7, name: '空位', role: 'guest', occupied: false },
+];
+
+// ===== 房间卡片数据 =====
+const rooms = [
+  { title: '深夜情感电台', host: '小夜', count: 126, full: false },
+  { title: '一起K歌嗨翻天', host: '麦霸小王', count: 89, full: false },
+  { title: '🔥热门话题讨论', host: '阿强', count: 356, full: true },
+  { title: '治愈系轻音乐', host: '音乐人阿远', count: 57, full: false },
+  { title: '聊聊星座那些事', host: '星语心愿', count: 341, full: false },
+  { title: '二次元聚集地', host: '动漫控', count: 178, full: false },
+];
+
+// ===== 页面导航 =====
+function goPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  currentPage = pageId;
+
+  if (pageId === 'page2') {
+    document.getElementById('createOverlay').classList.remove('show');
+  }
+}
+
+// ===== 第2页：渲染房间卡片 =====
+function renderRoomCards() {
+  const grid = document.getElementById('roomGrid');
+  grid.innerHTML = rooms.map((r, i) => `
+    <div class="room-card" onclick="enterRoom('${r.title}', ${r.full})">
+      <div class="room-cover">🎤 封面占位</div>
+      <div class="room-title-short"></div>
+      <div class="room-title-long"></div>
+      <div style="font-size:11px;color:#555;margin-bottom:4px;">${r.title}</div>
+      <div class="room-meta">
+        <div class="avatar-sm"></div>
+        <span>${r.host}</span>
+        <span style="margin-left:auto;">👥 ${r.count}</span>
+      </div>
+    </div>
+  `).join('');
+}
+renderRoomCards();
+
+function enterRoom(title, isFull) {
+  document.getElementById('roomTitleDisplay').textContent = '🎵 ' + title;
+  resetSeats(isFull);
+  goPage('page3');
+}
+
+// ===== 第3页：渲染麦位 =====
+function renderSeats() {
+  const grid = document.getElementById('seatGrid');
+  grid.innerHTML = seats.map(s => {
+    let cls = 'seat-avatar';
+    let tag = '';
+    let muteHtml = '';
+
+    if (s.role === 'host') {
+      cls += ' occupied host';
+      tag = '<span class="seat-tag">房主</span>';
+    } else if (s.occupied) {
+      cls += ' occupied';
+    } else if (s.id === mySeatIndex) {
+      cls += ' occupied you';
+    }
+
+    if (s.muteSelf) {
+      muteHtml = '<span class="mute-badge mute-self">🔇</span>';
+    } else if (s.muteForce) {
+      muteHtml = '<span class="mute-badge mute-force">🚫</span>';
+    }
+
+    const name = s.id === mySeatIndex ? '我' : s.name;
+
+    return `
+      <div class="seat">
+        <div class="${cls}">
+          ${s.occupied || s.id === mySeatIndex ? '👤' : '○'}
+          ${tag}
+          ${muteHtml}
+        </div>
+        <span class="seat-name">${name}</span>
+      </div>
+    `;
+  });
+
+  updateMicButton();
+}
+
+// ===== 上麦/下麦逻辑 =====
+function toggleMic() {
+  const freeCount = seats.filter(s => s.role === 'guest' && !s.occupied).length;
+
+  if (isOnMic) {
+    // 下麦
+    seats[mySeatIndex].occupied = false;
+    mySeatIndex = -1;
+    isOnMic = false;
+  } else {
+    // 上麦：找第一个空位
+    if (freeCount === 0) return; // 麦位已满，不可上麦
+    const freeIdx = seats.findIndex(s => s.role === 'guest' && !s.occupied);
+    seats[freeIdx].occupied = true;
+    mySeatIndex = freeIdx;
+    isOnMic = true;
+  }
+  renderSeats();
+}
+
+function updateMicButton() {
+  const btn = document.getElementById('btnMic');
+  const tip = document.getElementById('micTooltip');
+  const freeCount = seats.filter(s => s.role === 'guest' && !s.occupied).length;
+
+  if (isOnMic) {
+    btn.textContent = '下麦';
+    btn.disabled = false;
+    btn.classList.remove('is-disabled');
+    tip.classList.remove('show');
+  } else if (freeCount === 0) {
+    btn.textContent = '上麦';
+    btn.disabled = false;           // 不禁用，否则 hover 不触发
+    btn.classList.add('is-disabled'); // 视觉上置灰
+    tip.classList.add('show');       // 父容器 hover 时显示
+  } else {
+    btn.textContent = '上麦';
+    btn.disabled = false;
+    btn.classList.remove('is-disabled');
+    tip.classList.remove('show');
+  }
+}
+
+function resetSeats(isFull) {
+  isOnMic = false;
+  mySeatIndex = -1;
+  seats.forEach((s, i) => {
+    if (i === 0) { s.occupied = true; s.name = '房主'; s.role = 'host'; s.muteSelf = false; s.muteForce = false; return; }
+    s.role = 'guest';
+    if (isFull) {
+      s.occupied = true;
+      s.name = ['小明','阿强','乐乐','小红','大伟','老李','小七'][i-1];
+      s.muteSelf = i === 1;
+      s.muteForce = i === 3;
+    } else {
+      s.occupied = i <= 3;
+      s.name = i <= 3 ? ['小明','阿强','乐乐','小红'][i-1] : '空位';
+      s.muteSelf = i === 1;
+      s.muteForce = i === 3;
+    }
+  });
+  renderSeats();
+}
+
+// ===== 弹窗逻辑 =====
+function openCreateModal() {
+  document.getElementById('createOverlay').classList.add('show');
+  document.getElementById('roomNameInput').value = '';
+  document.getElementById('btnCreate').disabled = true;
+}
+
+function closeCreateModal() {
+  document.getElementById('createOverlay').classList.remove('show');
+}
+
+function checkCreateValid() {
+  const val = document.getElementById('roomNameInput').value.trim();
+  document.getElementById('btnCreate').disabled = (val === '');
+}
+
+function createRoom() {
+  const name = document.getElementById('roomNameInput').value.trim();
+  if (!name) return;
+  document.getElementById('roomTitleDisplay').textContent = '🎵 ' + name + '（我的房间）';
+  document.getElementById('createOverlay').classList.remove('show');
+  // 重置麦位，自己的房间
+  seats.forEach((s, i) => {
+    if (i === 0) { s.occupied = true; s.name = '我（房主）'; s.role = 'host'; s.muteSelf = false; s.muteForce = false; return; }
+    s.occupied = false;
+    s.name = '空位';
+    s.role = 'guest';
+    s.muteSelf = false;
+    s.muteForce = false;
+  });
+  isOnMic = false;
+  mySeatIndex = -1;
+  goPage('page3');
+}
+
+// ===== 初始化 =====
+renderSeats();
+updateMicButton();
+
+// 点击遮罩关闭弹窗
+document.getElementById('createOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCreateModal();
+});
+</script>
+
+</body>
+</html>
