@@ -112,6 +112,42 @@
     border: 1px solid #aaa;
   }
 
+  /* ===== AI 智能推荐区 ===== */
+  .ai-section {
+    padding: 10px 16px 4px; border-bottom: 1px solid #eee; flex-shrink: 0;
+  }
+  .ai-header {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  }
+  .ai-badge {
+    font-size: 9px; font-weight: bold; color: #fff; background: #333;
+    padding: 2px 6px; border: 1px solid #333;
+  }
+  .ai-header-text {
+    font-size: 13px; font-weight: bold; color: #1a1a1a;
+  }
+  .ai-subtitle {
+    font-size: 10px; color: #999; margin-left: auto;
+  }
+  .ai-room-list {
+    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;
+  }
+  .ai-room-card {
+    min-width: 200px; border: 1px solid #bbb; padding: 8px;
+    background: #fafafa; cursor: pointer; flex-shrink: 0;
+  }
+  .ai-room-card:hover { border-color: #333; }
+  .ai-room-cover {
+    width: 100%; height: 80px; background: #e0e0e0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #999; margin-bottom: 6px;
+  }
+  .ai-room-title { font-size: 12px; font-weight: bold; color: #333; margin-bottom: 4px; }
+  .ai-reason {
+    font-size: 10px; color: #555; background: #f0f0f0;
+    padding: 3px 6px; border-left: 2px solid #333; margin-top: 4px;
+  }
+
   /* ===== 第3页：语音房内页 ===== */
   .room-header {
     height: 44px; display: flex; align-items: center;
@@ -276,7 +312,16 @@
 
       <div class="section">
         <div class="section-label">3. 页面范围</div>
-        <div class="section-text">首页推荐 → 语音房内页 → 创建房间弹窗</div>
+        <div class="section-text">首页推荐（含AI智能推荐） → 语音房内页 → 创建房间弹窗</div>
+      </div>
+
+      <div class="section" style="border:1px dashed #333;padding:8px;background:#fafafa;">
+        <div class="section-label">5. AI 功能设计 ★</div>
+        <div class="section-text">
+          <b>AI 智能推荐：</b>基于用户收听历史、停留时长、互动行为，<b>个性化推荐</b>可能感兴趣的房间。<br>
+          推荐逻辑标注推荐理由，增强用户信任感，降低决策成本。<br>
+          <span style="color:#888;">→ 体现 AI 产品经理的算法理解与用户体验平衡能力</span>
+        </div>
       </div>
 
       <div class="section" style="border: 1px dashed #999; padding: 8px; background: #fafafa;">
@@ -320,6 +365,18 @@
       <span class="tab">K歌</span>
       <span class="tab">游戏</span>
       <span class="tab">交友</span>
+    </div>
+
+    <!-- AI 智能推荐区 -->
+    <div class="ai-section">
+      <div class="ai-header">
+        <span class="ai-badge">AI</span>
+        <span class="ai-header-text">智能推荐 · 为你优选</span>
+        <span class="ai-subtitle">基于你的收听偏好</span>
+      </div>
+      <div class="ai-room-list" id="aiRoomList">
+        <!-- JS 动态生成 -->
+      </div>
     </div>
 
     <!-- 房间列表 -->
@@ -452,6 +509,25 @@ function goPage(pageId) {
 }
 
 // ===== 第2页：渲染房间卡片 =====
+// ===== AI 推荐数据 =====
+const aiRecommendations = [
+  { title: '治愈系轻音乐', reason: '你常听情感类房间，该房间风格相近' },
+  { title: '聊聊星座那些事', reason: '你关注的用户「星语心愿」正在主持' },
+  { title: '深夜情感电台', reason: '你上周停留超30分钟，可能想再来' },
+];
+
+function renderAiRooms() {
+  const list = document.getElementById('aiRoomList');
+  list.innerHTML = aiRecommendations.map(r => `
+    <div class="ai-room-card" onclick="enterRoom('${r.title}', false)">
+      <div class="ai-room-cover">🎤 AI推荐</div>
+      <div class="ai-room-title">${r.title}</div>
+      <div class="ai-reason">💡 ${r.reason}</div>
+    </div>
+  `).join('');
+}
+renderAiRooms();
+
 function renderRoomCards() {
   const grid = document.getElementById('roomGrid');
   grid.innerHTML = rooms.map((r, i) => `
